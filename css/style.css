@@ -1,20 +1,166 @@
-.grid {
-    height: 400px;
-    width: 400px;
-    display: flex;
-    flex-wrap: wrap;
-    background-color: blue;
+.body {
+    text-align: center;
+    background-color: aquamarine;
 }
 
-.grid div {
-    height: 40px;
-    width: 40px;
+.text {
+    height: 20px;
+    width: 100px;
+    background-color: azure;
+
+    font-size: 15px;
+
+    margin-top: -10px;
+    margin-right: 20px;
+    border-radius: 4%;
+    padding: 10px;
+
+    display: inline-block;
 }
 
-.checked {
+.play-again {
+    width: 50px;
+    height: 50px;
+    background-color: azure;
+
+    font-size: 20px;
+
+    margin: auto;
+    margin-bottom: 10px;
+    margin-top: -10px;
+    border: none;
+    border-radius: 5%;
+
+    display: block;
+    cursor: pointer;
+}
+
+.level {
+    height: 20px;
+    width: 80px;
     background-color: chartreuse;
+
+    font-size: 15px;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 800;
+
+    margin-bottom: 20x;
+    border: none;
+
+    cursor: pointer;
 }
 
-.mine {
-    background-color: aqua;
+.board {
+    margin: auto;
+    margin-top: 30px;
+
 }
+
+.cell {
+
+    background-color: dodgerblue;
+    font-size: 20px;
+    height: 30px;
+    width: 30px;
+    cursor: pointer;
+    margin: 100px;
+    border: 1.5px solid;
+}
+
+header {
+    display: inline-block;
+}
+
+
+button {
+    height: 30px;
+    width: 100px;
+    background-color: azure;
+
+    font-size: 15px;
+    font-family:Arial, Helvetica, sans-serif;
+    font-weight: 800;
+
+    margin-bottom: 20x;
+    border: none;
+}
+
+ul {
+  
+   position: absolute;
+    right: 100px;
+    display: inline-block;
+    margin-top: -100px;
+}
+
+li {
+    list-style: none;
+    margin-bottom: 10px;
+
+}
+
+li button {
+    text-align: center;
+    height: 40px;
+    width: 120px;
+    margin-right: 10px;
+    padding-left: 20px;
+    padding-top: 10px;
+    font-size: 1.1em;
+
+    background-color: azure;
+    cursor: pointer;
+
+    border: 1px solid;
+
+}
+
+.manually {
+    height: 90px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,155 +1,309 @@
 'use strict'
 
+const EMOJI = '😎'
+const LOSE = '🥴'
+const WIN = '🤩'
+const MINE = '💣'
+const FLAG = '🚩'
+const EMPTY = ''
 
-document.addEventListener('DOMContentLoaded', () => {
-const grid = document.querySelector('.grid')
-var width = 10
-var mineAmount = 20
-var flags = 0
-var squares = []
-var minesArray = []
-var isGameOver = false
+
+var gGame = {
+    isOn: false,
+    shownCount: 0,
+    markedCount: 0,
+    secsPassed: 0,
+    isHint: false,
+    safeCount: 0,
+    isSevenBoom: false,
+    manuallyPos: false,
+    countManually: 0
+}
+var gLevel = {
+    LEVEL: 0,
+    SIZE: 4,
+    MINES: 2,
+    EMPTY: 14
+}
+
+var gManuallyInterval
+var gTimerInterval
+
+var gHints = []
+var gMinePoses = []
+
+var gBoard = []
+var gIsFirstClick
+
+var gElPlayAgain = document.querySelector('.play-again')
+var gElBtnManually = document.querySelector('.manually')
+
+function init() {
+
+    gGame = {
+        isOn: true,
+        shownCount: 0,
+        markedCount: 0,
+        secsPassed: 0,
+        isHint: false,
+        safeCount: 0,
+        isSevenBoom: false,
+        manuallyPos: false,
+        countManually: 0
+    }
+
+    gIsFirstClick = true
+    
+    gElBtnManually.innerText = 'manually position💣'
+    gElPlayAgain.innerText = EMOJI
+
+    
+    gBoard = createBoard()
+    renderBoard(gBoard)
+
+
+    restHints()
+}
 
 function createBoard() {
-const mineArray = Array(mineAmount).fill('mine')
-const emptyArray = Array(width*width - mineAmount).fill('valid')
-const gameArray = emptyArray.concat(minesArray)
-const shuffledArray = gameArray.sort(() => Math.random() -0.5)
+    console.log('create board was called')
+    var count = gLevel.SIZE
+    var board = []
 
+    for (var i = 0; i < count; i++) {
+        board.push([])
 
-        for(var i = 0; i < width*width; i++) {
-            const square = document.createElement('div')
-            square.setAttribute('id', i)
-            square.classList.add(shuffledArray[i])
-            grid.appendChild(square)
-            squares.push(square)
-
-            square.addEventListener('click', function(e){
-                click(square)
-            })
-
-
-
+        for (var j = 0; j < count; j++) {
+            board[i].push(createCell())
         }
-
-for (var i = 0; i < squares.length; i++){
-    var total = 0
-    const isLeftEdge = (i % width === 0)
-    const isRightEdge = (i % width === width -1)
-
-    if (squares[i].classList.contains('valid')) {
-        if (i > 0 && !isLeftEdge && squares[i -1].classList.contains('mine')) total ++
-        if (i > 9 && !isRightEdge && squares[i + 1 -width].classList.contains('mine')) total ++
-        if (i > 10 && squares[i -width].classList.contains('mine')) total ++
-        if (i > 11 && !isLeftEdge && squares[i -1 -width].classList.contains('mine')) total ++
-        if (i < 98 && !isRightEdge && squares[i +1].classList.contains('mine')) total ++
-        if (i < 90 && !isLeftEdge && squares[i -1 +width].classList.contains('mine')) total ++
-        if (i < 88 && !isRightEdge && squares[i +1 +width].classList.contains('mine')) total ++
-        if (i < 89 && squares[i +width].classList.contains('mine')) total ++
-        squares[i].setAttribute('data', total)
     }
-
+    return board
 }
 
-    }
-    createBoard()
+function renderBoard(board) {
+    console.log("renderBoard was called")
 
-    function addFlag(square) {
-        if (isGameOver) return
-        if (!square.classList.contains('checked') && (flags > mineAmount)) {
-        if (!square.classList.contains('flag')) {
-            square.classList.add('flag')
-            square.innerHTML = '🚩'
-            flags ++
-        } else {
-            square.classList.remove('flag')
-            square.innerHTML = ''
-            flags --
-    }
-    }
-    }
 
-function click(square) {
-    var currentId = square.id
-    if (isGameOver) return
-    if (square.classList.contains('checked') || square.classList.contains('flag')) return
-    if (square.classList.contains('mine')){
-        gameOver(square)
-        console.log('game over')
-    } else {
-        var total = square.getAttribute('data')
-        if (total !=0) {
-            square.classList.add('checked')
-            square.innerHTML = total
-            return
+    var boardHTML = '<table>\n'
+
+    for (var i = 0; i < board.length; i++) {
+        boardHTML += ' <tr>'
+
+        for (var j = 0; j < board[i].length; j++) {
+            var cellId = getIdByLoc({ i, j })
+            boardHTML += `\n\t <td class= "cell"
+             onclick="cellClicked(event,this, ${i}, ${j})" 
+             oncontextmenu ="cellMarked(event,this, ${i}, ${j})"
+             id="${cellId}" ></td>`
         }
-        checkSquare(square, currentId)
+        boardHTML += '\n </tr>'
+
     }
-    square.classList.add('checked')
+    boardHTML += "\n</table>"
+
+    var elBoard = document.querySelector('.board')
+    elBoard.innerHTML = boardHTML
 }
 
-function checkSquare(square, currentId){
-    var isLeftEdge = (currentId % width === 0)
-    var isRightEdge = (currentId % width === width -1)
+function cellClicked(event, elCell, i, j) {
 
-    setTimeout(() => {
-if (currentId > 0 && !isLeftEdge) {
-    var newId = squares[parseInt(currentId) -1].id
-    var newSquare = document.getElementById(newId)
-    click(newSquare)
-}
-if (currentId > 9 && !isRightEdge){
-    var newId = squares[parseInt(currentId) +1 -width].id
-    var newSquare = document.getElementById(newId)
-    click(newSquare)
-}
-if (currentId > 10) {
-    var newId = squares[parseInt(currentId -width)].id
-    var newSquare = document.getElementById(newId)
-    click(newSquare)
-}
-if (currentId > 11 && !isLeftEdge) {
-    var newId = squares[parseInt(currentId) -1 -width].id
-    var newSquare = document.getElementById(newId)
-    click(newSquare)
-}
-if (currentId < 98 && !isRightEdge){
-    var newIdc = squares[parseInt(currentId) +1].id
-    var newSquare = document.getElementById(newId)
-    click(newSquare)
-}
-if(currentId < 90 && !isLeftEdge){
-    var newId = squares[parseInt(currentId) -1 +width].id
-    var newSquare = document.getElementById(newId)
-    click(newSquare)
-}
-if(currentId < 88 && !isRightEdge){
-    var newId = squares[parseInt(currentId) +1 +width].id
-    var newSquare = document.getElementById(newId)
-    click(newSquare)
-}
-if (currentId < 89){
-    var newId = squares[parseInt(currentId) +width].id
-    var newSquare = document.getElementById(newId)
-    click(newSquare)
+    if (!gGame.isOn) return
+
+    if (gIsFirstClick) {
+        createMines(i, j)
+        setTimer()
+    }
+
+    var cell = gBoard[i][j]
+    if (gGame.isHint) {
+        showCell(cell, i, j)
+        expandShown(i, j)
+        gGame.isHint = false
+        setTimeout(() => {
+            gGame.isHint = false
+            hideCells(i, j)
+        }, 1000);
+        return
+    }
+
+    if (cell.isMine) {
+        showMines()
+        gGame.isOn = false
+        gElPlayAgain.innerText = LOSE
+
+        clearTimer()
+        return
+    }
+
+    if (cell.isShown) {
+        return
+    }
+
+    showCell(cell, i, j)
+    checkGameOver()
+    if (!minesNegsCount(i, j)) expandShown(i, j)
 }
 
-}, 10)
+function checkGameOver() {
+
+    if (gGame.shownCount === gLevel.EMPTY && allMinesMarked()) {
+        showMines()
+        gGame.isOn = false
+        clearTimer()
+        gElPlayAgain.innerText = WIN
+    }
 }
 
-function gameOver(square) {
-    console.log('game over')
-    isGameOver = true
+function expandShown(rowIdx, colIdx) {
+    for (var i = rowIdx - 1; i <= rowIdx + 1; i++) {
+        if (i < 0 || i >= gBoard.length) continue
 
-    squares.forEach(square => {
-        if (square.classList.contains('mine')) {
-            square.innerHTML = '💣'
+        for (var j = colIdx - 1; j <= colIdx + 1; j++) {
+
+            if (j < 0 || j >= gBoard[i].length) continue
+            if (i === rowIdx && j === colIdx) continue
+
+            var cell = gBoard[i][j]
+
+            if (cell.isShown) continue
+
+            showCell(cell, i, j)
+            if (!minesNegsCount(i, j) && !gGame.isHint) expandShown(i, j)
         }
-    })
+    }
+}
+
+function playAgain() {
+    var elTimer = document.querySelector('.timer')
+    elTimer.innerText = '0:0'
+    clearTimer()
+    init()
+}
+
+function showCell(cell, i, j) {
+
+    if (!gGame.isHint) {
+        cell.isShown = true
+        gGame.shownCount++
+    }
+
+    var id = getIdByLoc({ i, j })
+    var elCell = document.getElementById(id)
+    elCell.classList.add('shown')
+    if (gGame.isHint && cell.isMine) {
+        elCell.innerText = MINE
+        return
+    }
+    switch (cell.minesAroundCount) {
+        case 1:
+            elCell.classList.add('one')
+            break
+        case 2:
+            elCell.classList.add('two')
+            break
+        case 3:
+            elCell.classList.add('three')
+            break
+        case 4:
+            elCell.classList.add('four')
+            break
+        case 5:
+            elCell.classList.add('five')
+            break
+        case 6:
+            elCell.classList.add('six')
+            break
+        case 7:
+            elCell.classList.add('seven')
+            break
+        case 8:
+            elCell.classList.add('eigth')
+            break
+    }
+    elCell.innerText = (!cell.minesAroundCount) ? ' ' : cell.minesAroundCount
+    checkGameOver()
+}
+
+
+function setTimer() {
+    var seconds = 0
+    var minutes = 0
+    var elTimer = document.querySelector('.timer')
+
+    gTimerInterval = setInterval(() => {
+        gGame.secsPassed++
+        console.log(gGame.secsPassed);
+        seconds++
+        if (seconds === 60) {
+            seconds = 0
+            minutes++
+        }
+        elTimer.innerText = minutes + ":" + seconds
+    }, 1000);
+
+}
+
+var gCountScore = 0
+function clearTimer() {
+    localStorage.setItem( gCountScore++ ,gGame.secsPassed);
+    clearInterval(gTimerInterval)
+    setBestScore()
+}
+
+function setBestScore() {
+    var elBestScore = document.querySelector('.score')
+    elBestScore.innerText = checkBestScore()
+}
+
+function checkBestScore() {
+    var max = 0
+    console.log(localStorage);
+    for (var item in localStorage) {
+        var value = localStorage.getItem(localStorage.key(item))
+        if (value > max) max = value
+    }
+    console.log(max);
+    return max
 }
 
 
 
+init()
 
 
-})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
